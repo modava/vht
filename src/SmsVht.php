@@ -34,7 +34,7 @@ class SmsVht extends Component
         if ($this->debug === true) {
             $debug = [];
             foreach ($this->getStatusCode() as $phone => $statusCode) {
-                $debug[] = $phone . ': ' . $this->getResponseMessage($statusCode) . ', Message: ' . (is_string($this->messages) ? $this->messages : (is_array($this->messages) && array_key_exists($phone, $this->messages) ? $this->messages[$phone] : '-'));
+                $debug[] = $phone . ': ' . $this->getResponseMessage($statusCode) . ', Message: ' . $this->getMessage($phone);
             }
             \Yii::warning(json_encode($debug, JSON_UNESCAPED_UNICODE));
         }
@@ -45,12 +45,18 @@ class SmsVht extends Component
      */
     private function sendSms($phone = null, string $message = '')
     {
-        if ($message == '') $message = $this->getMessage($phone);
-
         if (!$this->checkData($phone, $message)) {
             return false;
         }
         if (substr($phone, 0, 1) == 0) $phone = '84' . substr($phone, 1);
+        if ($message == '') {
+            $message = $this->getMessage($phone);
+        } else {
+            if (is_string($this->messages) && trim($this->messages) != '') $this->messages = '';
+            if (is_array($this->messages) && $phone != null && trim($phone) != '') {
+                $this->messages[$phone] = $message;
+            }
+        }
         try {
             $client = new Client([
                 'verify' => false,
@@ -127,6 +133,7 @@ class SmsVht extends Component
     public function getStatusCode(string $phone = '')
     {
         if ($phone != '') {
+            if (substr($phone, 0, 1) == 0) $phone = '84' . substr($phone, 1);
             if (is_array($this->statusCode) && array_key_exists($phone, $this->statusCode)) return $this->statusCode[$phone];
             return null;
         }
