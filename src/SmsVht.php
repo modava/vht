@@ -122,8 +122,9 @@ class SmsVht extends Component
                 return $var == null || $var == '';
             });
             if (count($arr_null) > 0) {
-                if ($phone != '' && $phone != null) $this->error[$phone] .= 'Thiếu tham số: ' . implode(', ', array_keys($arr_null)) . '.';
-                else $this->error[] .= 'Thiếu tham số: ' . implode(', ', array_keys($arr_null)) . '.';
+                if($phone == '') $phone = null;
+                if(!array_key_exists($phone, $this->error)) $this->error[$phone] = '';
+                $this->error[$phone] .= 'Thiếu tham số: ' . implode(', ', array_keys($arr_null)) . '.';
             }
             return false;
         }
@@ -143,7 +144,7 @@ class SmsVht extends Component
     /**
      * @return string
      */
-    public function getResponseMessage(int $code = null, string $phone = ''): string
+    public function getResponseMessage($code = null, $phone = ''): string
     {
 
         $errors = [
